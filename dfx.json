@@ -1,5 +1,4 @@
 {
-  "dfx": "0.22.0",
   "canisters": {
     "event_store": {
       "type": "rust",
