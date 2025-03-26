@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize};
+use candid::{CandidType, Deserialize, Principal};
 use serde::Serialize;
 
 mod lifecycle;
@@ -8,6 +8,14 @@ mod updates;
 pub use lifecycle::*;
 pub use queries::*;
 pub use updates::*;
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub enum WhitelistAction {
+    #[serde(rename = "add")]
+    Add,
+    #[serde(rename = "remove")]
+    Remove,
+}
 
 pub type Milliseconds = u64;
 pub type TimestampMillis = u64;
@@ -59,4 +67,10 @@ impl Anonymizable {
     pub fn is_public(&self) -> bool {
         matches!(self, Anonymizable::Public(_))
     }
+}
+
+pub trait WhitelistApi {
+    fn update_push_whitelist(principals: Vec<Principal>, action: WhitelistAction);
+    fn update_read_whitelist(principals: Vec<Principal>, action: WhitelistAction);
+    fn update_admin_whitelist(principals: Vec<Principal>, action: WhitelistAction);
 }

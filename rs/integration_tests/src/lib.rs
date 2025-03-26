@@ -81,6 +81,7 @@ fn users_and_source_can_be_anonymized(users: bool, sources: bool) {
     } = install_canister(Some(InitArgs {
         push_events_whitelist: vec![random_principal()],
         read_events_whitelist: vec![random_principal()],
+        admin_whitelist: vec![random_principal()],
         time_granularity: None,
     }));
 
@@ -145,6 +146,7 @@ fn time_granularity_applied_correctly(time_granularity: Option<Milliseconds>) {
     } = install_canister(Some(InitArgs {
         push_events_whitelist: vec![random_principal()],
         read_events_whitelist: vec![random_principal()],
+        admin_whitelist: vec![random_principal()],
         time_granularity,
     }));
 
@@ -220,6 +222,7 @@ fn install_canister(init_args: Option<InitArgs>) -> TestEnv {
     let init_args = init_args.unwrap_or_else(|| InitArgs {
         push_events_whitelist: vec![random_principal()],
         read_events_whitelist: vec![random_principal()],
+        admin_whitelist: vec![random_principal()],
         time_granularity: None,
     });
 
