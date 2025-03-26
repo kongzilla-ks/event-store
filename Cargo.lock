@@ -545,6 +545,7 @@ dependencies = [
  "event_store_canister",
  "event_store_utils",
  "ic-cdk 0.17.0",
+ "ic-cdk-macros 0.17.0",
  "ic-cdk-timers",
  "ic-http-certification",
  "ic-stable-structures",

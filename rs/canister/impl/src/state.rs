@@ -17,6 +17,7 @@ thread_local! {
 pub struct State {
     push_events_whitelist: HashSet<Principal>,
     read_events_whitelist: HashSet<Principal>,
+    admin_whitelist: HashSet<Principal>,
     time_granularity: Option<Milliseconds>,
     #[serde(skip)]
     events: Events,
@@ -24,6 +25,29 @@ pub struct State {
     #[serde(default)]
     integrations_data: IntegrationsData,
     salt: Salt,
+    modification_log: Vec<WhitelistModification>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct WhitelistModification {
+    pub timestamp: TimestampMillis,
+    pub caller: Principal,
+    pub action: ModificationAction,
+    pub list_type: WhitelistType,
+    pub principal: Principal,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum ModificationAction {
+    Added,
+    Removed,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum WhitelistType {
+    Pusher,
+    Reader,
+    Admin,
 }
 
 const STATE_ALREADY_INITIALIZED: &str = "State has already been initialized";
@@ -57,14 +81,19 @@ impl State {
         read_events_whitelist: HashSet<Principal>,
         time_granularity: Option<Milliseconds>,
     ) -> State {
+        let mut admin_whitelist = HashSet::new();
+        admin_whitelist.insert(env::caller()); // Initialize with deployer as admin
+
         State {
             push_events_whitelist,
             read_events_whitelist,
+            admin_whitelist,
             time_granularity,
             events: Events::default(),
             event_deduper: EventDeduper::default(),
             integrations_data: IntegrationsData::default(),
             salt: Salt::default(),
+            modification_log: Vec::new(),
         }
     }
 
@@ -76,6 +105,11 @@ impl State {
     pub fn can_caller_read_events(&self) -> bool {
         let caller = env::caller();
         self.read_events_whitelist.contains(&caller)
+    }
+
+    pub fn is_caller_admin(&self) -> bool {
+        let caller = env::caller();
+        self.admin_whitelist.contains(&caller)
     }
 
     pub fn whitelisted_principals(&self) -> WhitelistedPrincipals {
@@ -115,5 +149,33 @@ impl State {
     #[allow(dead_code)]
     pub fn integrations_data_mut(&mut self) -> &mut IntegrationsData {
         &mut self.integrations_data
+    }
+
+    pub fn add_admin_principal(&mut self, principal: Principal) {
+        self.admin_whitelist.insert(principal);
+    }
+
+    pub fn add_push_whitelist_principal(&mut self, principal: Principal) -> bool {
+        self.push_events_whitelist.insert(principal)
+    }
+
+    pub fn remove_push_whitelist_principal(&mut self, principal: &Principal) -> bool {
+        self.push_events_whitelist.remove(principal)
+    }
+
+    pub fn add_read_whitelist_principal(&mut self, principal: Principal) -> bool {
+        self.read_events_whitelist.insert(principal)
+    }
+
+    pub fn remove_read_whitelist_principal(&mut self, principal: &Principal) -> bool {
+        self.read_events_whitelist.remove(principal)
+    }
+
+    pub fn add_admin_whitelist_principal(&mut self, principal: Principal) -> bool {
+        self.admin_whitelist.insert(principal)
+    }
+
+    pub fn remove_admin_whitelist_principal(&mut self, principal: &Principal) -> bool {
+        self.admin_whitelist.remove(principal)
     }
 }

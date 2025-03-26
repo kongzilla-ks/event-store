@@ -6,5 +6,6 @@ use serde::Serialize;
 pub struct InitArgs {
     pub push_events_whitelist: Vec<Principal>,
     pub read_events_whitelist: Vec<Principal>,
+    pub admin_whitelist: Vec<Principal>,
     pub time_granularity: Option<Milliseconds>,
 }

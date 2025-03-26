@@ -6,11 +6,21 @@ use std::time::Duration;
 
 #[init]
 fn init(args: InitArgs) {
-    state::init(State::new(
+    // Clone the whitelist to avoid moving it
+    let whitelist = args.push_events_whitelist.clone();
+    
+    let mut state = State::new(
         args.push_events_whitelist.into_iter().collect(),
         args.read_events_whitelist.into_iter().collect(),
         args.time_granularity,
-    ));
+    );
+    
+    // All principals in push_events_whitelist are considered admins
+    for principal in whitelist.iter() {
+        state.add_admin_principal(*principal);
+    }
+
+    state::init(state);
 
     ic_cdk_timers::set_timer(Duration::ZERO, || {
         ic_cdk::spawn(async {

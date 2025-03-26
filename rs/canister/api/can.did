@@ -35,6 +35,7 @@ type IndexedEvent = record {
 type InitArgs = record {
   push_events_whitelist : vec principal;
   read_events_whitelist : vec principal;
+  admin_whitelist : vec principal;
   time_granularity : opt nat64;
 };
 type PushEventsArgs = record { events : vec IdempotentEvent };
@@ -47,4 +48,8 @@ service : (InitArgs) -> {
   http_request : (HttpRequest) -> (HttpResponse) query;
   push_events : (PushEventsArgs) -> ();
   whitelisted_principals : () -> (WhitelistedPrincipals) query;
+  update_push_whitelist : (vec principal, variant { add; remove }) -> ();
+  update_read_whitelist : (vec principal, variant { add; remove }) -> ();
+  update_admin_whitelist : (vec principal, variant { add; remove }) -> ();
+  get_admin_whitelist : () -> (vec principal) query;
 }
